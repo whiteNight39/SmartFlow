@@ -35,9 +35,10 @@ public class StaffValidator {
     public static void validateRoles(Staff staff, StaffRole role) {
 
         if (!staff.getStaffRole().equals(role)) {
-            throw new ValidationException("Access denied. Required role: " + role);
+            throw new ApiException("33", "Access denied. Required role: " + role, null);
         }
     }
+
     public static void validateRoles(StaffAccountDetails staff, String role) {
 
         if (!staff.getStaffRole().equals(role)) {
