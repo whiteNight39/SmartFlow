@@ -58,7 +58,8 @@ public class CompanyService {
         StaffValidator.validateRoles(dev, StaffRole.DEVELOPER);
 
         Company duplicateCompany = companyRepository.getCompanyByRegistrationNumber(request.getCompanyRegistrationNumber());
-        if (duplicateCompany != null) {throw new IllegalArgumentException("Duplicate company registration number");}
+        if (duplicateCompany != null)
+            throw new ApiException("55", "Company with registration number "+ request.getCompanyRegistrationNumber() +" already exists", null);
 
         Company company = companyRequestMapper.toEntity(request);
         companyRepository.addCompany(company);

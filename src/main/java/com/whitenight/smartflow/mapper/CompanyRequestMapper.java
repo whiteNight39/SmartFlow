@@ -8,7 +8,6 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface CompanyRequestMapper {
 
-    Company toEntity(CompanyContactUpdateRequest request);
     Company toEntity(CompanyCreateRequest request);
     Company toEntity(CompanyUpdateRequest request);
 }
