@@ -128,7 +128,7 @@ public class CompanyService {
         return new BaseResponse<>("00", "Company activated", null);
     }
 
-    public BaseResponse<?> updateCompanyDetails(CompanyUpdateRequest request, UUID staffId, UUID companyId, String role) {
+    public BaseResponse<?> updateCompanyDetails(CompanyUpdateRequest request, UUID staffId, UUID companyId, StaffRole role) {
         if (request == null) throw new ApiException("11", "Validation failed: Company update request cannot be null", null);
 
         Company staffCompany = companyRepository.getCompany(companyId);
@@ -151,7 +151,7 @@ public class CompanyService {
     }
 
     @Transactional
-    public BaseResponse<?> updateCompanyContact(CompanyUpdateRequest request, UUID staffId, UUID companyId, String role) {
+    public BaseResponse<?> updateCompanyContact(CompanyUpdateRequest request, UUID staffId, UUID companyId, StaffRole role) {
         if (request == null) {
             throw new ApiException("11", "Company update request cannot be null", null);
         }
