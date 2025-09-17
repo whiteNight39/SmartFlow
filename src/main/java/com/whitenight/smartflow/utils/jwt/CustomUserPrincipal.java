@@ -1,5 +1,6 @@
 package com.whitenight.smartflow.utils.jwt;
 
+import com.whitenight.smartflow.utils.rank.StaffRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CustomUserPrincipal {
     private UUID userId;
-    private String role;
+    private StaffRole role;
     private UUID companyId;
 }
