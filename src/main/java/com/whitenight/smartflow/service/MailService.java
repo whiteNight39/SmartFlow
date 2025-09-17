@@ -28,7 +28,7 @@ public class MailService {
         );
 
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("smartflow.whitenight@gmail.com"); // must match sender in Brevo
+        message.setFrom("smartflow.whitenight@gmail.com");
         message.setTo(toEmail);
         message.setSubject(subject);
         message.setText(text);

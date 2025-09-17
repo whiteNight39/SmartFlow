@@ -1,5 +1,6 @@
 package com.whitenight.smartflow.model.request;
 
+import com.whitenight.smartflow.utils.rank.StaffRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,7 +24,7 @@ public class StaffCreateRequest {
     @NotBlank
     private String staffPhone;
     @NotBlank
-    private String staffRole;
+    private StaffRole staffRole;
     @NotBlank
     private String staffJobTitle;
 //    @NotBlank

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -18,9 +19,9 @@ public class StaffInvite {
     private UUID staffInviteCSVUploadId;
     private String staffInviteEmail;
     private String staffInviteToken;
-    private LocalDateTime staffInviteExpiresAt;
+    private Instant staffInviteExpiresAt;
 
     private String staffInviteStatus;
-    private LocalDateTime staffInviteCreatedAt;
-    private LocalDateTime staffInviteUpdatedAt;
+    private Instant staffInviteCreatedAt;
+    private Instant staffInviteUpdatedAt;
 }

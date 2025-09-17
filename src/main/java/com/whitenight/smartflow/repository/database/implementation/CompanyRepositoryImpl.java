@@ -1,7 +1,9 @@
 package com.whitenight.smartflow.repository.database.implementation;
 
 import com.whitenight.smartflow.mapper.CompanyMapper;
+import com.whitenight.smartflow.mapper.StaffInviteMapper;
 import com.whitenight.smartflow.model.entity.Company;
+import com.whitenight.smartflow.model.entity.StaffInvite;
 import com.whitenight.smartflow.repository.database.interfaces.CompanyRepository;
 import com.whitenight.smartflow.repository.database.query.CompanyQuery;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -55,6 +57,15 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
         return jdbcTemplate.queryForObject(CompanyQuery.GET_COMPANY_BY_REGISTRATION_NUMBER, params,
                 new CompanyMapper());
+    }
+
+    @Override
+    public List<StaffInvite> getCompanyContactInviteDetails(String companyRegNo) {
+        MapSqlParameterSource params =  new MapSqlParameterSource()
+                .addValue("companyRegistrationNumber", companyRegNo);
+
+        return jdbcTemplate.query(CompanyQuery.GET_COMPANY_CONTACT_INVITE_DETAILS, params,
+                new StaffInviteMapper());
     }
 
     @Override

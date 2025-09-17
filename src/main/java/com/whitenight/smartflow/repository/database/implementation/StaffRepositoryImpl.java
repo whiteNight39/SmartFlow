@@ -2,10 +2,10 @@ package com.whitenight.smartflow.repository.database.implementation;
 
 import com.whitenight.smartflow.mapper.StaffMapper;
 import com.whitenight.smartflow.model.entity.Staff;
-import com.whitenight.smartflow.model.response.StaffAccountDetails;
 import com.whitenight.smartflow.model.response.StaffResponse;
 import com.whitenight.smartflow.repository.database.interfaces.StaffRepository;
 import com.whitenight.smartflow.repository.database.query.StaffQuery;
+import com.whitenight.smartflow.utils.rank.StaffRole;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -92,29 +92,12 @@ public class StaffRepositoryImpl implements StaffRepository {
     }
 
     @Override
-    public StaffAccountDetails getStaffByEmail(String staffEmail) {
+    public Staff getStaffByEmail(String staffEmail) {
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("staffEmail", staffEmail);
 
-        List<StaffAccountDetails> staffs = jdbcTemplate.query(StaffQuery.GET_STAFF_BY_EMAIL, params,
-                (rs, rowNum) -> StaffAccountDetails.builder()
-                        .staffId(UUID.fromString(rs.getString("staff_id")))
-                        .staffFirstName(rs.getString("staff_first_name"))
-                        .staffLastName(rs.getString("staff_last_name"))
-                        .staffEmail(rs.getString("staff_email"))
-                        .staffPassword(rs.getString("staff_password"))
-                        .staffPhone(rs.getString("staff_phone"))
-                        .staffRole(rs.getString("staff_role"))
-                        .staffJobTitle(rs.getString("staff_job_title"))
-                        .staffSmartflowPersona(rs.getString("staff_smartflow_persona"))
-                        .staffDepartment(rs.getString("staff_department"))
-                        .staffWhoAddedId(getUuidOrNull(rs, "staff_who_added_id"))
-                        .staffCompanyId(getUuidOrNull(rs, "staff_company_id"))
-                        .staffDepartmentHeadId(getUuidOrNull(rs, "staff_department_head_id"))
-                        .staffAuthId(rs.getString("staff_auth_id"))
-                        .staffActivated(rs.getBoolean("staff_activated"))
-                        .build());
+        List<Staff> staffs = jdbcTemplate.query(StaffQuery.GET_STAFF_BY_EMAIL, params, new StaffMapper());
 
         return staffs.isEmpty() ? null : staffs.getFirst();
     }

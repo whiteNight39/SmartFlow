@@ -1,8 +1,10 @@
 package com.whitenight.smartflow.controller;
 
 import com.whitenight.smartflow.model.entity.Company;
+import com.whitenight.smartflow.model.request.CompanyActivationRequest;
 import com.whitenight.smartflow.model.request.CompanyCreateRequest;
 import com.whitenight.smartflow.model.request.CompanyUpdateRequest;
+import com.whitenight.smartflow.model.response.BaseResponse;
 import com.whitenight.smartflow.model.response.CompanyAPIResponse;
 import com.whitenight.smartflow.service.CompanyService;
 import com.whitenight.smartflow.utils.jwt.CustomUserPrincipal;
@@ -31,185 +33,78 @@ public class CompanyController {
     }
 
     @PostMapping("/onboard-company")
-    public ResponseEntity<CompanyAPIResponse<String>> onboardCompany(@Valid @RequestBody CompanyCreateRequest request,
-                                                             BindingResult bindingResult) {
+    public BaseResponse<?> onboardCompany(@Valid @RequestBody CompanyCreateRequest request) {
 
-        if (bindingResult.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(error ->
-                    errors.put(error.getField(), error.getDefaultMessage())
-            );
+        CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
-            CompanyAPIResponse<String> errorResponse = CompanyAPIResponse.<String>builder()
-                    .companyAPIResponseCode("400")
-                    .companyAPIResponseMessage("Validation failed")
-                    .companyAPIResponseData(errors.toString())
-                    .build();
+        UUID devId = userPrincipal.getUserId();
 
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
+        return companyService.onboardCompany(request, devId);
+    }
 
-        try {
-            CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
-                    .getContext()
-                    .getAuthentication()
-                    .getPrincipal();
+    @PatchMapping("/activate-company")
+    public BaseResponse<?> activateCompany(@Valid @RequestBody CompanyActivationRequest request) {
 
-            UUID devId = userPrincipal.getUserId();
-            String role = userPrincipal.getRole();
-            UUID companyId = userPrincipal.getCompanyId();
-
-            companyService.onboardCompany(request, devId);
-
-            CompanyAPIResponse<String> successResponse = CompanyAPIResponse.<String>builder()
-                    .companyAPIResponseCode("200")
-                    .companyAPIResponseMessage("Company Onboarded Successfully")
-                    .build();
-
-            return ResponseEntity.ok(successResponse);
-        } catch (Exception e) {
-
-            CompanyAPIResponse<String> errorResponse = CompanyAPIResponse.<String>builder()
-                    .companyAPIResponseCode("500")
-                    .companyAPIResponseMessage("ERROR")
-                    .companyAPIResponseData(e.getMessage())
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+        return companyService.activateCompany(request);
     }
 
     @GetMapping("/get-companies")
-    public ResponseEntity<CompanyAPIResponse<Object>> getCompanies() {
+    public BaseResponse<?> getCompanies() {
 
-        try {
-            CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
-                    .getContext()
-                    .getAuthentication()
-                    .getPrincipal();
+        CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
-            UUID devId = userPrincipal.getUserId();
-            String role = userPrincipal.getRole();
-            UUID devCompanyId = userPrincipal.getCompanyId();
+        UUID devId = userPrincipal.getUserId();
 
-            List<Company> companies = companyService.getAllCompanies(devId);
-
-            CompanyAPIResponse<Object> successResponse = CompanyAPIResponse.<Object>builder()
-                    .companyAPIResponseCode("200")
-                    .companyAPIResponseMessage("Companies Retieved")
-                    .companyAPIResponseData(companies)
-                    .build();
-
-            return ResponseEntity.ok(successResponse);
-        } catch (Exception e) {
-
-            CompanyAPIResponse<Object> errorResponse = CompanyAPIResponse.<Object>builder()
-                    .companyAPIResponseCode("500")
-                    .companyAPIResponseMessage("ERROR")
-                    .companyAPIResponseData("ERROR: " + e.getMessage())
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+        return companyService.getAllCompanies(devId);
     }
 
     @PatchMapping("/update-company-details")
-    public ResponseEntity<CompanyAPIResponse<String>> updateCompanyDetails(@Valid @RequestBody CompanyUpdateRequest request) {
+    public BaseResponse<?> updateCompanyDetails(@Valid @RequestBody CompanyUpdateRequest request) {
 
-        try {
-            CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
-                    .getContext()
-                    .getAuthentication()
-                    .getPrincipal();
+        CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
-            UUID staffId = userPrincipal.getUserId();
-            String role = userPrincipal.getRole();
-            UUID companyId = userPrincipal.getCompanyId();
+        UUID staffId = userPrincipal.getUserId();
+        String role = userPrincipal.getRole();
+        UUID companyId = userPrincipal.getCompanyId();
 
-            companyService.updateCompanyDetails(request, staffId, companyId, role);
-
-            CompanyAPIResponse<String> successResponse = CompanyAPIResponse.<String>builder()
-                    .companyAPIResponseCode("200")
-                    .companyAPIResponseMessage("Company Updated Successfully")
-                    .build();
-
-            return ResponseEntity.ok(successResponse);
-        } catch (Exception e) {
-
-            CompanyAPIResponse<String> errorResponse = CompanyAPIResponse.<String>builder()
-                    .companyAPIResponseCode("500")
-                    .companyAPIResponseMessage("ERROR")
-                    .companyAPIResponseData(e.getMessage())
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+        return companyService.updateCompanyDetails(request, staffId, companyId, role);
     }
 
     @PatchMapping("/update-company-contact")
-    public ResponseEntity<CompanyAPIResponse<String>> updateCompanyContactPerson(@Valid @RequestBody CompanyContactUpdateRequest request) {
+    public BaseResponse<?> updateCompanyContactPerson(@Valid @RequestBody CompanyUpdateRequest request) {
 
-        try {
-            CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
-                    .getContext()
-                    .getAuthentication()
-                    .getPrincipal();
+        CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
-            UUID staffId = userPrincipal.getUserId();
-            String role = userPrincipal.getRole();
-            UUID companyId = userPrincipal.getCompanyId();
+        UUID staffId = userPrincipal.getUserId();
+        String role = userPrincipal.getRole();
+        UUID companyId = userPrincipal.getCompanyId();
 
-            companyService.updateCompanyContactPerson(request, staffId, companyId, role);
-
-            CompanyAPIResponse<String> successResponse = CompanyAPIResponse.<String>builder()
-                    .companyAPIResponseCode("200")
-                    .companyAPIResponseMessage("Contact Person Updated Successfully")
-                    .build();
-
-            return ResponseEntity.ok(successResponse);
-        } catch (Exception e) {
-
-            CompanyAPIResponse<String> errorResponse = CompanyAPIResponse.<String>builder()
-                    .companyAPIResponseCode("500")
-                    .companyAPIResponseMessage("ERROR")
-                    .companyAPIResponseData(e.getMessage())
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+        return companyService.updateCompanyContact(request, staffId, companyId, role);
     }
 
     @PatchMapping("/unregister-company")
-    public ResponseEntity<CompanyAPIResponse<String>> unregisterCompany(@Valid @RequestParam UUID companyId) {
+    public BaseResponse<?> unregisterCompany(@Valid @RequestParam UUID companyId) {
 
-        try {
-            CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
-                    .getContext()
-                    .getAuthentication()
-                    .getPrincipal();
+        CustomUserPrincipal userPrincipal = (CustomUserPrincipal) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
-            UUID devId = userPrincipal.getUserId();
-            String role = userPrincipal.getRole();
-            UUID devCompanyId = userPrincipal.getCompanyId();
+        UUID devId = userPrincipal.getUserId();
 
-            companyService.unregisterCompany(companyId, devId);
-
-            CompanyAPIResponse<String> successResponse = CompanyAPIResponse.<String>builder()
-                    .companyAPIResponseCode("200")
-                    .companyAPIResponseMessage("Contact Unregistered")
-                    .build();
-
-            return ResponseEntity.ok(successResponse);
-        } catch (Exception e) {
-
-            CompanyAPIResponse<String> errorResponse = CompanyAPIResponse.<String>builder()
-                    .companyAPIResponseCode("500")
-                    .companyAPIResponseMessage("ERROR")
-                    .companyAPIResponseData(e.getMessage())
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+        return companyService.unregisterCompany(companyId, devId);
     }
 
 

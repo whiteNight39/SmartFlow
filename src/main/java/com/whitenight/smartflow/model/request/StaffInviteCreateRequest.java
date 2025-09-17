@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -22,5 +23,5 @@ public class StaffInviteCreateRequest {
     private String staffInviteToken;
     @NotNull
     @Future
-    private LocalDateTime staffInviteExpiresAt;
+    private Instant staffInviteExpiresAt;
 }

@@ -2,13 +2,12 @@ package com.whitenight.smartflow.service;
 
 import com.whitenight.smartflow.mapper.CompanyRequestMapper;
 import com.whitenight.smartflow.mapper.StaffInviteRequestMapper;
-import com.whitenight.smartflow.mapper.StaffRequestMapper;
 import com.whitenight.smartflow.model.entity.Company;
 import com.whitenight.smartflow.model.entity.Staff;
 import com.whitenight.smartflow.model.entity.StaffInvite;
+import com.whitenight.smartflow.model.enums.Status;
 import com.whitenight.smartflow.model.request.*;
 import com.whitenight.smartflow.model.response.BaseResponse;
-import com.whitenight.smartflow.model.response.StaffAccountDetails;
 import com.whitenight.smartflow.repository.database.interfaces.CompanyRepository;
 import com.whitenight.smartflow.repository.database.interfaces.StaffInviteRepository;
 import com.whitenight.smartflow.repository.database.interfaces.StaffRepository;
@@ -18,10 +17,11 @@ import com.whitenight.smartflow.utils.rank.StaffRole;
 import com.whitenight.smartflow.utils.validator.CompanyValidator;
 import com.whitenight.smartflow.utils.validator.StaffValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,18 +35,16 @@ public class CompanyService {
     private final StaffInviteRequestMapper staffInviteRequestMapper;
 
     private final StaffRepository staffRepository;
-    private final StaffRequestMapper staffRequestMapper;
 
     private final MailService mailService;
 
     @Autowired
-    public CompanyService(CompanyRepository companyRepository, CompanyRequestMapper companyRequestMapper, StaffInviteRepository staffInviteRepository, StaffInviteRequestMapper staffInviteRequestMapper, StaffRepository staffRepository, StaffRequestMapper staffRequestMapper, MailService mailService) {
+    public CompanyService(CompanyRepository companyRepository, CompanyRequestMapper companyRequestMapper, StaffInviteRepository staffInviteRepository, StaffInviteRequestMapper staffInviteRequestMapper, StaffRepository staffRepository, MailService mailService) {
         this.companyRepository = companyRepository;
         this.companyRequestMapper = companyRequestMapper;
         this.staffInviteRepository = staffInviteRepository;
         this.staffInviteRequestMapper = staffInviteRequestMapper;
         this.staffRepository = staffRepository;
-        this.staffRequestMapper = staffRequestMapper;
         this.mailService = mailService;
     }
 
@@ -64,106 +62,154 @@ public class CompanyService {
         Company company = companyRequestMapper.toEntity(request);
         companyRepository.addCompany(company);
 
+        String token = TokenGenerator.generateSecureToken(16);
         StaffInviteCreateRequest inviteCreateRequest = StaffInviteCreateRequest.builder()
                 .staffInviteCSVUploadId(null)
-                .staffInviteEmail(request.getCompanyContactPersonEmail())
-                .staffInviteToken(TokenGenerator.generateSecureToken(16))
-                .staffInviteExpiresAt(LocalDateTime.now().plusDays(2))
+                .staffInviteEmail(request.getCompanyContactEmail())
+                .staffInviteToken(token)
+                .staffInviteExpiresAt(Instant.now().plus(2, ChronoUnit.DAYS))
                 .build();
         StaffInvite invite = staffInviteRequestMapper.toEntity(inviteCreateRequest);
         staffInviteRepository.inviteStaff(invite);
 
-        // Generate email and send to request.getCompanyContactPersonEmail()
-        mailService.sendActivationEmail(invite.getStaffInviteEmail(), invite.getStaffInviteToken());
+        // Generate email and send to request.getCompanyContactEmail()
+        mailService.sendActivationEmail(request.getCompanyContactEmail(), token);
 
-        StaffCreateRequest staffCreateRequest = StaffCreateRequest.builder()
-                .staffFirstName(request.getCompanyContactPersonFirstName())
-                .staffLastName(request.getCompanyContactPersonLastName())
-                .staffEmail(request.getCompanyContactPersonEmail())
-                .staffPhone(request.getCompanyContactPersonPhone())
-                .staffRole("SUPER_ADMIN")
-                .staffJobTitle(request.getCompanyContactPersonJobTitle())
+        Staff staff = Staff.builder()
+                .staffFirstName(request.getCompanyContactFirstName())
+                .staffLastName(request.getCompanyContactLastName())
+                .staffEmail(request.getCompanyContactEmail())
+                .staffPhone(request.getCompanyContactPhone())
+                .staffRole(StaffRole.SUPER_ADMIN)
+                .staffJobTitle(request.getCompanyContactJobTitle())
+                .staffActivated(false)
+                .staffWhoAddedId(devId)
+                .staffCompanyId(company.getCompanyId())
+                .staffPassword(null)
                 .build();
-        Staff staff = staffRequestMapper.toEntity(staffCreateRequest);
-        staff.setStaffWhoAddedId(devId);
-        staff.setStaffCompanyId(company.getCompanyId());
-        String tempPassword = TokenGenerator.generateSecureToken(12); // or any random string
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String hashedPassword = passwordEncoder.encode(tempPassword); // Use BCrypt or whatever you're using
-        staff.setStaffPassword(hashedPassword);
-
         staffRepository.addStaff(staff);
+
+        return new BaseResponse<>("00", "Company onboarded, awaiting activation", null);
     }
 
-    public void updateCompanyDetails(CompanyUpdateRequest request, UUID staffId, UUID companyId, String role) {
+    @Transactional
+    public BaseResponse<?> activateCompany(CompanyActivationRequest request) {
+        if (request == null) throw new ApiException("11", "Request cannot be null", null);
 
-        if (request == null) throw new IllegalArgumentException("Company request cannot be null");
+        Company company = companyRepository.getCompanyByRegistrationNumber(request.getCompanyRegistrationNumber());
+        CompanyValidator.validateCompany(company);
+        if (company.getCompanyStatus() == Status.ACTIVE) {
+            throw new ApiException("55", "Company already activated", null);
+        }
+
+        List<StaffInvite> staffInvites = companyRepository.getCompanyContactInviteDetails(request.getCompanyRegistrationNumber());
+        StaffInvite matchedInvite = staffInvites.stream()
+                .filter(inv -> request.getToken().equals(inv.getStaffInviteToken()))
+                .findFirst()
+                .orElseThrow(() -> new ApiException("55", "Invalid token", null));
+
+        if (matchedInvite.getStaffInviteExpiresAt().isBefore(Instant.now())) {
+            throw new ApiException("55", "Token expired", null);
+        }
+
+        Staff companyContact = staffRepository.getStaffByEmail(request.getCompanyContactEmail());
+        companyContact.setStaffActivated(true);
+        companyContact.setStaffStatus(Status.ACTIVE);
+        staffRepository.updateStaff(companyContact);
+
+        company.setCompanyStatus(Status.ACTIVE);
+        companyRepository.updateCompany(company);
+
+        // clear invites after activation
+        for (StaffInvite staffInvite : staffInvites) {
+            staffInviteRepository.deleteStaffInvite(staffInvite.getStaffInviteId());
+        }
+
+        return new BaseResponse<>("00", "Company activated", null);
+    }
+
+    public BaseResponse<?> updateCompanyDetails(CompanyUpdateRequest request, UUID staffId, UUID companyId, String role) {
+        if (request == null) throw new ApiException("11", "Validation failed: Company update request cannot be null", null);
 
         Company staffCompany = companyRepository.getCompany(companyId);
         CompanyValidator.validateCompany(staffCompany);
 
         Staff staff = staffRepository.getStaffById(staffId);
         StaffValidator.validateStaff(staff);
-        if (!role.equalsIgnoreCase("SUPER_ADMIN")) {
-            throw new IllegalArgumentException("Access denied. Required role: SUPER_ADMIN");
-        }
+        StaffValidator.validateRoles(staff, StaffRole.SUPER_ADMIN);
 
         Company companyUpdated = companyRequestMapper.toEntity(request);
         companyUpdated.setCompanyId(companyId);
-        companyRepository.updateCompany(companyUpdated);
+
+        try {
+            companyRepository.updateCompany(companyUpdated);
+        } catch (Exception e) {
+            throw new ApiException("22", "Failed to update company details", e);
+        }
+
+        return new BaseResponse<>("00", "Company updated", null);
     }
 
-    public void updateCompanyContactPerson(CompanyContactUpdateRequest request, UUID staffId, UUID companyId, String role) {
-        if (request == null) throw new IllegalArgumentException("Company request cannot be null");
+    @Transactional
+    public BaseResponse<?> updateCompanyContact(CompanyUpdateRequest request, UUID staffId, UUID companyId, String role) {
+        if (request == null) {
+            throw new ApiException("11", "Company update request cannot be null", null);
+        }
 
         Company staffCompany = companyRepository.getCompany(companyId);
         CompanyValidator.validateCompany(staffCompany);
 
         Staff staffAdding = staffRepository.getStaffById(staffId);
         StaffValidator.validateStaff(staffAdding);
-        if (!role.equalsIgnoreCase("SUPER_ADMIN")) {
-            throw new IllegalArgumentException("Access denied. Required role: SUPER_ADMIN");
-        }
+        StaffValidator.validateRoles(staffAdding, StaffRole.SUPER_ADMIN);
 
-        String staffAddedEmail = request.getCompanyContactPersonEmail();
-        UUID staffAddedId = staffRepository.getStaffByEmail(staffAddedEmail).getStaffId();
-        Staff staffAdded = staffRepository.getStaffById(staffAddedId);
+        Staff staffAdded = staffRepository.getStaffByEmail(request.getCompanyContactEmail());
         StaffValidator.validateStaff(staffAdded);
 
-        if (staffAddedId.equals(staffId)) {
-            throw new IllegalArgumentException("New contact person must be different from the current one");
+        if (staffAdded.getStaffId().equals(staffId)) {
+            throw new ApiException("44", "New contact cannot be the same as the current contact", null);
         }
 
         Company companyUpdated = companyRequestMapper.toEntity(request);
         companyUpdated.setCompanyId(companyId);
         companyRepository.updateCompany(companyUpdated);
 
-        staffAdded.setStaffRole("SUPER_ADMIN");
+        staffAdded.setStaffRole(StaffRole.SUPER_ADMIN);
         staffRepository.updateStaff(staffAdded);
-        staffAdding.setStaffRole("ADMIN");
+
+        staffAdding.setStaffRole(StaffRole.ADMIN);
         staffRepository.updateStaff(staffAdding);
+
+        return new BaseResponse<>("00", "Company contact person changed", null);
     }
 
-    public List<Company> getAllCompanies(UUID devId) {
-        if (devId == null) throw new IllegalArgumentException("devId cannot be null");
+    public BaseResponse<?> getAllCompanies(UUID devId) {
+        if (devId == null) {
+            throw new ApiException("11", "Developer ID cannot be null", null);
+        }
 
         Staff dev = staffRepository.getStaffById(devId);
         StaffValidator.validateStaff(dev);
-        StaffValidator.validateRoles(dev, "DEVELOPER");
+        StaffValidator.validateRoles(dev, StaffRole.DEVELOPER);
 
-        return companyRepository.getAllCompanies();
+        List<Company> companies = companyRepository.getAllCompanies();
+
+        return new BaseResponse<>("00", "Companies retrieved successfully", companies);
     }
 
-    public void unregisterCompany(UUID companyId, UUID devId) {
-        if (companyId == null) throw new IllegalArgumentException("Company Id is required");
+    @Transactional
+    public BaseResponse<?> unregisterCompany(UUID companyId, UUID devId) {
+        if (companyId == null) throw new ApiException("11", "Company ID cannot be null", null);
 
         Staff dev = staffRepository.getStaffById(devId);
         StaffValidator.validateStaff(dev);
-        StaffValidator.validateRoles(dev, "DEVELOPER");
+        StaffValidator.validateRoles(dev, StaffRole.DEVELOPER);
 
         Company company = companyRepository.getCompany(companyId);
         CompanyValidator.validateCompany(company);
 
         companyRepository.unregisterCompany(companyId);
+
+        return new BaseResponse<>("00", "Company unregistered successfully", null);
     }
 }

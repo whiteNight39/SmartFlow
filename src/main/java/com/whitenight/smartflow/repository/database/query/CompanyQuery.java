@@ -80,6 +80,18 @@ public class CompanyQuery {
       AND company_status != 'DELETED';
 """;
 
+    public static final String GET_COMPANY_CONTACT_INVITE_DETAILS = """
+            SELECT
+                si.staff_invite_email,
+                si.staff_invite_token,
+                si.staff_invite_expires_at
+            FROM Company c
+            LEFT JOIN StaffInvite si
+                ON c.company_contact_email = si.staff_invite_email
+            WHERE c.company_registration_number = :companyRegistrationNumber
+                AND c.company_status != 'DELETED'
+            """;
+
     public static final String GET_ALL_COMPANIES = """
     SELECT
         company_id,

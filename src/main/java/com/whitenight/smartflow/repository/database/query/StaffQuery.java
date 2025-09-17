@@ -29,13 +29,13 @@ public class StaffQuery {
         :staffPhone,
         :staffRole,
         :staffJobTitle,
-        :staffSmartflowPersona,
-        :staffDepartment,
+        COALESCE(:staffSmartflowPersona, NULL),
+        COALESCE(:staffDepartment, NULL),
         :staffWhoAddedId,
         :staffCompanyId,
-        :staffDepartmentHeadId,
+        COALESCE(:staffDepartmentHeadId, NULL),
         
-        'ACTIVE',
+        'PENDING',
         FALSE,
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP

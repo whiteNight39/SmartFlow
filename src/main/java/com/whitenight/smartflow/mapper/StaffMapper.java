@@ -1,6 +1,7 @@
 package com.whitenight.smartflow.mapper;
 
 import com.whitenight.smartflow.model.entity.Staff;
+import com.whitenight.smartflow.utils.rank.StaffRole;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,7 @@ public class StaffMapper implements RowMapper<Staff> {
                 .staffLastName(rs.getString("staff_last_name"))
                 .staffEmail(rs.getString("staff_email"))
                 .staffPhone(rs.getString("staff_phone"))
-                .staffRole(rs.getString("staff_role"))
+                .staffRole(StaffRole.valueOf(rs.getString("staff_role")))
                 .staffJobTitle(rs.getString("staff_job_title"))
                 .staffSmartflowPersona(rs.getString("staff_smartflow_persona"))
                 .staffWhoAddedId(getUuidOrNull(rs, "staff_who_added_id"))

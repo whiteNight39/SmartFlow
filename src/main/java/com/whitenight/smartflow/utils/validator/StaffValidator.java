@@ -1,7 +1,6 @@
 package com.whitenight.smartflow.utils.validator;
 
 import com.whitenight.smartflow.model.entity.Staff;
-import com.whitenight.smartflow.model.response.StaffAccountDetails;
 import com.whitenight.smartflow.repository.database.interfaces.StaffRepository;
 import com.whitenight.smartflow.utils.exception.ApiException;
 import com.whitenight.smartflow.utils.rank.StaffRole;
@@ -39,10 +38,10 @@ public class StaffValidator {
         }
     }
 
-    public static void validateRoles(StaffAccountDetails staff, String role) {
-
-        if (!staff.getStaffRole().equals(role)) {
-            throw new ValidationException("Access denied. Required role: " + role);
-        }
-    }
+//    public static void validateRoles(StaffAccountDetails staff, String role) {
+//
+//        if (!staff.getStaffRole().equals(role)) {
+//            throw new ValidationException("Access denied. Required role: " + role);
+//        }
+//    }
 }
