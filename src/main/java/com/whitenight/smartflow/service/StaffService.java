@@ -8,12 +8,14 @@ import com.whitenight.smartflow.model.entity.StaffInvite;
 import com.whitenight.smartflow.model.entity.StaffJwtAuth;
 import com.whitenight.smartflow.model.request.StaffCreateRequest;
 import com.whitenight.smartflow.model.request.StaffInviteCreateRequest;
+import com.whitenight.smartflow.model.response.BaseResponse;
 import com.whitenight.smartflow.model.response.StaffAccountDetails;
 import com.whitenight.smartflow.model.response.StaffSignInResponse;
 import com.whitenight.smartflow.repository.database.interfaces.StaffInviteRepository;
 import com.whitenight.smartflow.repository.database.interfaces.StaffJwtAuthRepository;
 import com.whitenight.smartflow.repository.database.interfaces.StaffRepository;
 import com.whitenight.smartflow.utils.TokenGenerator;
+import com.whitenight.smartflow.utils.exception.ApiException;
 import com.whitenight.smartflow.utils.jwt.JwtUtil;
 import com.whitenight.smartflow.utils.rank.RoleUtils;
 import com.whitenight.smartflow.utils.rank.StaffRole;
@@ -23,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,8 +48,10 @@ public class StaffService {
 
     private final MailService mailService;
 
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public StaffService(StaffRepository staffRepository, StaffJwtAuthRepository staffJwtAuthRepository, StaffJwtAuthMapper staffJwtAuthMapper, JwtUtil jwtUtil, StaffRequestMapper staffRequestMapper, StaffInviteRepository staffInviteRepository, StaffInviteRequestMapper staffInviteRequestMapper, MailService mailService) {
+
+    public StaffService(StaffRepository staffRepository, StaffJwtAuthRepository staffJwtAuthRepository, StaffJwtAuthMapper staffJwtAuthMapper, JwtUtil jwtUtil, StaffRequestMapper staffRequestMapper, StaffInviteRepository staffInviteRepository, StaffInviteRequestMapper staffInviteRequestMapper, MailService mailService, BCryptPasswordEncoder passwordEncoder) {
         this.staffRepository = staffRepository;
         this.staffJwtAuthRepository = staffJwtAuthRepository;
         this.staffJwtAuthMapper = staffJwtAuthMapper;
@@ -55,49 +60,46 @@ public class StaffService {
         this.staffInviteRepository = staffInviteRepository;
         this.staffInviteRequestMapper = staffInviteRequestMapper;
         this.mailService = mailService;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public StaffSignInResponse devSignIn(String devEmail, String devPassword, String ip, String userAgent) {
-        if (devEmail == null) throw new IllegalArgumentException("devAuthId cannot be null");
-        if (devPassword == null) throw new IllegalArgumentException("devPassword cannot be null");
+    @Transactional
+    public BaseResponse<?> devSignIn(String devEmail, String devPassword, String ip, String userAgent) {
+        if (devEmail == null) throw new ApiException("11", "Developer email cannot be null", null);
+        if (devPassword == null) throw new ApiException("11", "Developer password cannot be null", null);
 
-        StaffAccountDetails dev = staffRepository.getStaffByEmail(devEmail);
-        if (dev == null) throw new IllegalArgumentException("Invalid email or password");
-        StaffValidator.validateRoles(dev, "DEVELOPER");
+        Staff dev = staffRepository.getStaffByEmail(devEmail);
+        if (dev == null) throw new ApiException("33", "Invalid email or password", null);
 
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        StaffValidator.validateRoles(dev, StaffRole.DEVELOPER);
 
-        if (passwordEncoder.matches(devPassword, dev.getStaffPassword())) {
+        if (!passwordEncoder.matches(devPassword, dev.getStaffPassword())) throw new ApiException("33", "Invalid email or password", null);
 
-            StaffJwtAuth auth = staffJwtAuthRepository.getStaffJwtAuth(dev.getStaffId(), ip, userAgent);
-            String token;
 
-            if (auth == null) {
+        StaffJwtAuth auth = staffJwtAuthRepository.getStaffJwtAuth(dev.getStaffId(), ip, userAgent);
+        String token;
 
-                token = jwtUtil.generateToken(dev.getStaffId());
+        if (auth == null || jwtUtil.isTokenExpired(auth.getStaffJwtAuthJwtToken())) {
+            token = jwtUtil.generateToken(dev.getStaffId());
 
-                StaffJwtAuth staffJwtAuth = StaffJwtAuth.builder()
-                        .staffJwtAuthStaffId(jwtUtil.extractUserId(token))
-                        .staffJwtAuthJwtToken(token)
-                        .staffJwtAuthIssuedAt(jwtUtil.getIssueDate(token))
-                        .staffJwtAuthExpiresAt(jwtUtil.getExpirationDate(token))
-                        .staffJwtAuthIsValid(jwtUtil.isTokenValid(token))
-                        .staffJwtAuthUserDeviceIp(ip)
-                        .staffJwtAuthUserDeviceAgent(userAgent)
-                        .staffJwtAuthLevel(dev.getStaffRole())
-                        .build();
-
-                staffJwtAuthRepository.createStaffJwtAuth(staffJwtAuth);
-            } else {
-                token = auth.getStaffJwtAuthJwtToken();
-            }
-
-            return StaffSignInResponse.builder()
-                    .staffJwtToken(token)
+            StaffJwtAuth staffJwtAuth = StaffJwtAuth.builder()
+                    .staffJwtAuthStaffId(dev.getStaffId())
+                    .staffJwtAuthJwtToken(token)
+                    .staffJwtAuthIssuedAt(jwtUtil.getIssueDate(token))
+                    .staffJwtAuthExpiresAt(jwtUtil.getExpirationDate(token))
+                    .staffJwtAuthUserDeviceIp(ip)
+                    .staffJwtAuthUserDeviceAgent(userAgent)
+                    .staffJwtAuthLevel(dev.getStaffRole())
                     .build();
+
+            staffJwtAuthRepository.createStaffJwtAuth(staffJwtAuth);
+        } else {
+            token = auth.getStaffJwtAuthJwtToken();
         }
-        throw new IllegalArgumentException("Invalid email or password");
+
+        return new BaseResponse<>("00", "Sign-in successful", token);
     }
+
 
     public void addSingleStaff(StaffCreateRequest request, UUID staffId, UUID companyId, String role) {
         if (request == null) throw new IllegalArgumentException("Staff request cannot be null");
@@ -117,8 +119,8 @@ public class StaffService {
 
         StaffRole addingRole, addedRole;
         try {
-            addingRole = StaffRole.valueOf(role.toUpperCase());
-            addedRole = StaffRole.valueOf(request.getStaffRole().toUpperCase());
+            addingRole = role;
+            addedRole = StaffRole.valueOf(request.getStaffRole());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid role provided");
         }

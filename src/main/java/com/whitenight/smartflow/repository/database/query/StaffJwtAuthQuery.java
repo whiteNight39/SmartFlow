@@ -8,7 +8,6 @@ public class StaffJwtAuthQuery {
         staff_jwt_auth_jwt_token,
         staff_jwt_auth_issued_at,
         staff_jwt_auth_expires_at,
-        staff_jwt_auth_is_valid,
         staff_jwt_auth_user_device_ip,
         staff_jwt_auth_user_device_agent,
         staff_jwt_auth_level
@@ -17,7 +16,6 @@ public class StaffJwtAuthQuery {
         :staffJwtAuthJwtToken,
         :staffJwtAuthIssuedAt,
         :staffJwtAuthExpiresAt,
-        :staffJwtAuthIsValid,
         :staffJwtAuthUserDeviceIp,
         :staffJwtAuthUserDeviceAgent,
         :staffJwtAuthLevel
@@ -31,7 +29,6 @@ public class StaffJwtAuthQuery {
         staff_jwt_auth_jwt_token,
         staff_jwt_auth_issued_at,
         staff_jwt_auth_expires_at,
-        staff_jwt_auth_is_valid,
         staff_jwt_auth_user_device_ip,
         staff_jwt_auth_user_device_agent,
         staff_jwt_auth_level

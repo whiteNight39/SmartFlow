@@ -2,6 +2,7 @@ package com.whitenight.smartflow.utils.jwt;
 
 import com.whitenight.smartflow.model.entity.Staff;
 import com.whitenight.smartflow.repository.database.interfaces.StaffRepository;
+import com.whitenight.smartflow.utils.rank.StaffRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -31,7 +32,7 @@ public class JwtUtil {
     public String generateToken(UUID staffId) {
 
         Staff staff = staffRepository.getStaffById(staffId);
-        String staffAuthLevel = staff.getStaffRole();
+        StaffRole staffAuthLevel = staff.getStaffRole();
 
         return Jwts.builder()
                 .setSubject(String.valueOf(staffId))
@@ -82,6 +83,15 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getExpiration();
+    }
+
+    public boolean isTokenExpired(String token) {
+        try {
+            Date expiration = getExpirationDate(token);
+            return expiration.before(new Date());
+        } catch (Exception e) {
+            return true; // treat parsing errors as expired
+        }
     }
 
     public Date getIssueDate(String token) {

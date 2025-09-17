@@ -1,5 +1,6 @@
 package com.whitenight.smartflow.model.entity;
 
+import com.whitenight.smartflow.utils.rank.StaffRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,5 +27,5 @@ public class StaffJwtAuth {
 
     private String staffJwtAuthUserDeviceIp;
     private String staffJwtAuthUserDeviceAgent;
-    private String staffJwtAuthLevel;
+    private StaffRole staffJwtAuthLevel;
 }

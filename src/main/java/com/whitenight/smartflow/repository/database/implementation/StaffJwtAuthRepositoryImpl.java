@@ -28,7 +28,6 @@ public class StaffJwtAuthRepositoryImpl implements StaffJwtAuthRepository {
                 .addValue("staffJwtAuthJwtToken", staffJwtAuth.getStaffJwtAuthJwtToken())
                 .addValue("staffJwtAuthIssuedAt", staffJwtAuth.getStaffJwtAuthIssuedAt())
                 .addValue("staffJwtAuthExpiresAt", staffJwtAuth.getStaffJwtAuthExpiresAt())
-                .addValue("staffJwtAuthIsValid", staffJwtAuth.getStaffJwtAuthIsValid())
                 .addValue("staffJwtAuthUserDeviceIp", staffJwtAuth.getStaffJwtAuthUserDeviceIp())
                 .addValue("staffJwtAuthUserDeviceAgent", staffJwtAuth.getStaffJwtAuthUserDeviceAgent())
                 .addValue("staffJwtAuthLevel", staffJwtAuth.getStaffJwtAuthLevel());
