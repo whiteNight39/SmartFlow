@@ -8,6 +8,7 @@ import com.whitenight.smartflow.model.response.BaseResponse;
 import com.whitenight.smartflow.model.response.CompanyAPIResponse;
 import com.whitenight.smartflow.service.CompanyService;
 import com.whitenight.smartflow.utils.jwt.CustomUserPrincipal;
+import com.whitenight.smartflow.utils.rank.StaffRole;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -73,7 +74,7 @@ public class CompanyController {
                 .getPrincipal();
 
         UUID staffId = userPrincipal.getUserId();
-        String role = userPrincipal.getRole();
+        StaffRole role = userPrincipal.getRole();
         UUID companyId = userPrincipal.getCompanyId();
 
         return companyService.updateCompanyDetails(request, staffId, companyId, role);
@@ -88,7 +89,7 @@ public class CompanyController {
                 .getPrincipal();
 
         UUID staffId = userPrincipal.getUserId();
-        String role = userPrincipal.getRole();
+        StaffRole role = userPrincipal.getRole();
         UUID companyId = userPrincipal.getCompanyId();
 
         return companyService.updateCompanyContact(request, staffId, companyId, role);
