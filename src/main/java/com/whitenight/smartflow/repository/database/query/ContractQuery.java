@@ -3,7 +3,7 @@ package com.whitenight.smartflow.repository.database.query;
 public class ContractQuery {
 
     public static final String CREATE_CONTRACT = """
-    INSERT INTO SMARTFLOW_Contract (
+    INSERT INTO Contract (
         contract_project_id,
         contract_supplier_id,
         contract_title,
@@ -42,12 +42,12 @@ public class ContractQuery {
         contract_end_date,
         contract_status,
         contract_brief_file
-    FROM SMARTFLOW_Contract
+    FROM Contract
     WHERE contract_id = :contractId;
 """;
 
     public static final String UPDATE_CONTRACT = """
-    UPDATE SMARTFLOW_Contract
+    UPDATE Contract
     SET
         contract_title = COALESCE(NULLIF(:contractTitle, ''), contract_title),
         contract_reference_number = COALESCE(NULLIF(:contractReferenceNumber, ''), contract_reference_number),
@@ -56,7 +56,7 @@ public class ContractQuery {
 """;
 
     public static final String DELETE_CONTRACT = """
-    UPDATE SMARTFLOW_Contract
+    UPDATE Contract
     SET contract_status = 'TERMINATED'
     WHERE contract_id = :contractId;
 """;

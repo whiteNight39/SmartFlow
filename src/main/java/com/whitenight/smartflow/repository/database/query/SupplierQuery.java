@@ -3,7 +3,7 @@ package com.whitenight.smartflow.repository.database.query;
 public class SupplierQuery {
 
     public static final String ADD_SUPPLIER = """
-    INSERT INTO SMARTFLOW_Supplier (
+    INSERT INTO Supplier (
         supplier_company_id,
         supplier_name,
         supplier_email,
@@ -70,8 +70,8 @@ public class SupplierQuery {
                     ELSE NULL
                 END AS supplier_staff_invited_by
                  
-            FROM SMARTFLOW_Supplier s
-            LEFT JOIN SMARTFLOW_SupplierStaff ss
+            FROM Supplier s
+            LEFT JOIN SupplierStaff ss
                 ON ss.supplier_staff_supplier_id = s.supplier_id
                 AND ss.supplier_staff_status = 'ACTIVE'
             WHERE s.supplier_id = :supplierId
@@ -79,7 +79,7 @@ public class SupplierQuery {
         """;
 
     public static final String UPDATE_SUPPLIER = """
-    UPDATE SMARTFLOW_Supplier
+    UPDATE Supplier
     SET
         supplier_name = COALESCE(NULLIF(:supplierName, ''), supplier_name),
         supplier_email = COALESCE(NULLIF(:supplierEmail, ''), supplier_email),
@@ -98,7 +98,7 @@ public class SupplierQuery {
 """;
 
     public static final String DELETE_SUPPLIER_BY_ID = """
-    UPDATE SMARTFLOW_Supplier
+    UPDATE Supplier
     SET supplier_status = 'DELETED',
         supplier_updated_at = CURRENT_TIMESTAMP
     WHERE supplier_id = :supplierId

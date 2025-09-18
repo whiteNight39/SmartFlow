@@ -3,7 +3,7 @@ package com.whitenight.smartflow.repository.database.query;
 public class ProjectQuery {
 
     public static final String CREATE_PROJECT = """
-    INSERT INTO SMARTFLOW_Project (
+    INSERT INTO Project (
         project_company_id,
         project_type,
         project_created_by_id,
@@ -72,13 +72,13 @@ public class ProjectQuery {
         project_status,
         project_created_at,
         project_updated_at
-    FROM SMARTFLOW_Project
+    FROM Project
     WHERE project_id = :projectId
       AND project_status != 'DELETED';
 """;
 
     public static final String UPDATE_PROJECT = """
-    UPDATE SMARTFLOW_Project
+    UPDATE Project
     SET
         project_type = COALESCE(NULLIF(:projectType, ''), project_type),
         project_supplier_id = COALESCE(:projectSupplierId, project_supplier_id),
@@ -101,14 +101,14 @@ public class ProjectQuery {
 """;
 
     public static final String DELETE_PROJECT = """
-    UPDATE SMARTFLOW_Project
+    UPDATE Project
     SET project_status = 'DELETED',
         project_updated_at = CURRENT_TIMESTAMP
     WHERE project_id = :projectId;
 """;
 
 //    public static final String ASSIGN_PROJECT_TO_STAFF = """
-//    UPDATE SMARTFLOW_Project
+//    UPDATE Project
 //    SET project_assigned_sm_id = :staffId,
 //        project_updated_at = CURRENT_TIMESTAMP
 //    WHERE project_id = :projectId
@@ -116,7 +116,7 @@ public class ProjectQuery {
 //""";
 //
 //    public static final String APPROVE_PROJECT = """
-//    UPDATE SMARTFLOW_Project
+//    UPDATE Project
 //    SET
 //        project_sm_approved = :projectSmApproved,
 //        project_sm_approval_notes = :projectSmApprovalNotes,
@@ -130,7 +130,7 @@ public class ProjectQuery {
 //""";
 //
 //    public static final String AUTHORISE_PROJECT = """
-//    UPDATE SMARTFLOW_Project
+//    UPDATE Project
 //    SET
 //        project_final_authorised = :projectFinalAuthorised,
 //        project_final_approval_notes = :projectFinalApprovalNotes,

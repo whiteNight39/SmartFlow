@@ -3,7 +3,7 @@ package com.whitenight.smartflow.repository.database.query;
 public class StaffQuery {
 
     public static final String ADD_STAFF = """
-    INSERT INTO SMARTFLOW_Staff (
+    INSERT INTO Staff (
         staff_first_name,
         staff_last_name,
         staff_email,
@@ -43,7 +43,7 @@ public class StaffQuery {
 """;
 
     public static final String UPDATE_STAFF = """
-    UPDATE SMARTFLOW_Staff
+    UPDATE Staff
     SET
         staff_first_name = COALESCE(NULLIF(:staffFirstName, ''), staff_first_name),
         staff_last_name = COALESCE(NULLIF(:staffLastName, ''), staff_last_name),
@@ -80,7 +80,7 @@ public class StaffQuery {
         staff_department_head_id,
         staff_auth_id,
         staff_activated
-    FROM SMARTFLOW_Staff
+    FROM Staff
     WHERE staff_id = :staffId
       AND staff_status = 'ACTIVE';
 """;
@@ -102,7 +102,7 @@ public class StaffQuery {
         staff_department_head_id,
         staff_auth_id,
         staff_activated
-    FROM SMARTFLOW_Staff
+    FROM Staff
     WHERE staff_email = :staffEmail
       AND staff_status = 'ACTIVE';
 """;
@@ -117,7 +117,7 @@ public class StaffQuery {
 
 
     public static final String DELETE_STAFF = """
-    UPDATE SMARTFLOW_Staff
+    UPDATE Staff
     SET staff_status = 'INACTIVE',
         staff_updated_at = CURRENT_TIMESTAMP
     WHERE staff_id = :staffId

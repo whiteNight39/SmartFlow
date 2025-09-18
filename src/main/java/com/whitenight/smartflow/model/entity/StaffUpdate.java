@@ -1,10 +1,8 @@
-package com.whitenight.smartflow.model.request;
+package com.whitenight.smartflow.model.entity;
 
 import com.whitenight.smartflow.model.enums.Status;
 import com.whitenight.smartflow.utils.rank.StaffRole;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +14,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StaffUpdateRequest {
+public class StaffUpdate {
 
+    private UUID staffUpdateId;
     private UUID staffUpdateStaffId;
     private String staffUpdateStaffFirstName;
     private String staffUpdateStaffLastName;
@@ -28,6 +27,8 @@ public class StaffUpdateRequest {
     private String staffUpdateStaffJobTitle;
     private String staffUpdateStaffSmartflowPersona;
     private String staffUpdateStaffDepartment;
+    private UUID staffUpdateStaffDepartmentHeadId;
     private String staffUpdateStaffAuthId;
     private  String staffUpdateStaffPassword;
+    private Status staffUpdateStaffStatus;
 }

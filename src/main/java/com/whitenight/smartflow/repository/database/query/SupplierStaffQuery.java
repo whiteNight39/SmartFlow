@@ -3,7 +3,7 @@ package com.whitenight.smartflow.repository.database.query;
 public class SupplierStaffQuery {
 
     public static final String ADD_SUPPLIER_STAFF = """
-    INSERT INTO SMARTFLOW_SupplierStaff (
+    INSERT INTO SupplierStaff (
         supplier_staff_supplier_id,
         supplier_staff_first_name,
         supplier_staff_last_name,
@@ -45,12 +45,12 @@ public class SupplierStaffQuery {
         supplier_staff_status,
         supplier_staff_created_at,
         supplier_staff_updated_at
-    FROM SMARTFLOW_SupplierStaff
+    FROM SupplierStaff
     WHERE supplier_staff_id = :supplierStaffId;
 """;
 
     public static final String UPDATE_SUPPLIER_STAFF = """
-    UPDATE SMARTFLOW_SupplierStaff
+    UPDATE SupplierStaff
     SET
         supplier_staff_first_name = COALESCE(NULLIF(:supplierStaffFirstName, ''), supplier_staff_first_name),
         supplier_staff_last_name = COALESCE(NULLIF(:supplierStaffLastName, ''), supplier_staff_last_name),
@@ -64,7 +64,7 @@ public class SupplierStaffQuery {
 """;
 
     public static final String DELETE_SUPPLIER_STAFF = """
-    UPDATE SMARTFLOW_SupplierStaff
+    UPDATE SupplierStaff
     SET supplier_staff_status = 'DELETED',
         supplier_staff_updated_at = CURRENT_TIMESTAMP
     WHERE supplier_staff_id = :supplierStaffId;

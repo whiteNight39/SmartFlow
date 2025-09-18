@@ -3,7 +3,7 @@ package com.whitenight.smartflow.repository.database.query;
 public class ChangeRequestQuery {
 
     public static final String CREATE_CHANGE_REQUEST = """
-    INSERT INTO SMARTFLOW_ChangeRequest (
+    INSERT INTO ChangeRequest (
         change_request_requested_by_staff_id,
         change_request_requested_by_supplier_staff_id,
         change_request_handled_by,
@@ -46,13 +46,13 @@ public class ChangeRequestQuery {
         change_request_resolved_at,
         change_request_sm_approved,
         change_request_sm_approval_notes
-    FROM SMARTFLOW_ChangeRequest
+    FROM ChangeRequest
     WHERE change_request_id = :changeRequestId
       AND change_request_status != 'DELETED';
 """;
 
     public static final String UPDATE_CHANGE_REQUEST = """
-    UPDATE SMARTFLOW_ChangeRequest
+    UPDATE ChangeRequest
     SET
         change_request_handled_by = COALESCE(:changeRequestHandledBy, change_request_handled_by),
         change_request_old_data = COALESCE(:changeRequestOldData, change_request_old_data),
@@ -67,20 +67,20 @@ public class ChangeRequestQuery {
 """;
 
     public static final String DELETE_CHANGE_REQUEST = """
-    UPDATE SMARTFLOW_ChangeRequest
+    UPDATE ChangeRequest
     SET change_request_status = 'DELETED'
     WHERE change_request_id = :changeRequestId;
 """;
 
 //    public static final String ASSIGN_CHANGE_REQUEST_TO_STAFF = """
-//    UPDATE SMARTFLOW_ChangeRequest
+//    UPDATE ChangeRequest
 //    SET change_request_handled_by = :staffId
 //    WHERE change_request_id = :changeRequestId
 //      AND change_request_status = 'PENDING';
 //""";
 //
 //    public static final String APPROVE_CHANGE_REQUEST = """
-//    UPDATE SMARTFLOW_ChangeRequest
+//    UPDATE ChangeRequest
 //    SET
 //        change_request_sm_approved = :changeRequestSmApproved,
 //        change_request_sm_approval_notes = :changeRequestSmApprovalNotes,

@@ -3,7 +3,7 @@ package com.whitenight.smartflow.repository.database.query;
 public class StaffAuthLogQuery {
 
     public static final String ADD_STAFF_AUTH_LOG = """
-    INSERT INTO SMARTFLOW_StaffAuthLog (
+    INSERT INTO StaffAuthLog (
         staff_auth_log_staff_id,
         staff_auth_log_staff_level,
         staff_auth_log_last_authorization_date
@@ -21,7 +21,7 @@ public class StaffAuthLogQuery {
         staff_auth_log_staff_id,
         staff_auth_log_staff_level,
         staff_auth_log_last_authorization_date
-    FROM SMARTFLOW_StaffAuthLog
+    FROM StaffAuthLog
     WHERE staff_auth_log_id = :staffAuthLogId;
 """;
 

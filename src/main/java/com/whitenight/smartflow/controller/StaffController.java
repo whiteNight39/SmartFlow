@@ -5,7 +5,6 @@ import com.whitenight.smartflow.model.request.StaffCreateRequest;
 import com.whitenight.smartflow.model.request.StaffSignInRequest;
 import com.whitenight.smartflow.model.response.CompanyAPIResponse;
 import com.whitenight.smartflow.model.response.StaffAPIResponse;
-import com.whitenight.smartflow.model.response.StaffAccountDetails;
 import com.whitenight.smartflow.model.response.StaffSignInResponse;
 import com.whitenight.smartflow.repository.database.interfaces.StaffRepository;
 import com.whitenight.smartflow.service.StaffService;
@@ -65,7 +64,7 @@ public class StaffController {
 
         try {
 
-            StaffAccountDetails staff = staffRepository.getStaffByEmail(staffSignInRequest.getStaffEmail());
+            Staff staff = staffRepository.getStaffByEmail(staffSignInRequest.getStaffEmail());
 
             StaffSignInResponse signInResponse = staffService.devSignIn(staffSignInRequest.getStaffEmail(), staffSignInRequest.getStaffPassword(), ip, userAgent);
 

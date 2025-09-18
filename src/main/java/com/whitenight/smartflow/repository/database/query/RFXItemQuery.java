@@ -3,7 +3,7 @@ package com.whitenight.smartflow.repository.database.query;
 public class RFXItemQuery {
 
     public static final String ADD_RFX_ITEM = """
-    INSERT INTO SMARTFLOW_RFXItem (
+    INSERT INTO RFXItem (
         rfx_item_rfx_id,
         rfx_item_name,
         rfx_item_description,
@@ -31,12 +31,12 @@ public class RFXItemQuery {
         rfx_item_quantity,
         rfx_item_unit_price_estimate,
         rfx_item_total_estimate
-    FROM SMARTFLOW_RFXItem
+    FROM RFXItem
     WHERE rfx_item_id = :rfxItemId;
 """;
 
     public static final String UPDATE_RFX_ITEM = """
-    UPDATE SMARTFLOW_RFXItem
+    UPDATE RFXItem
     SET
         rfx_item_name = COALESCE(NULLIF(:rfxItemName, ''), rfx_item_name),
         rfx_item_description = COALESCE(NULLIF(:rfxItemDescription, ''), rfx_item_description),
@@ -48,7 +48,7 @@ public class RFXItemQuery {
 """;
 
     public static final String DELETE_RFX_ITEM = """
-    DELETE FROM SMARTFLOW_RFXItem
+    DELETE FROM RFXItem
     WHERE rfx_item_id = :rfxItemId;
 """;
 

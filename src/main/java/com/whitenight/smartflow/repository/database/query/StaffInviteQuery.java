@@ -3,7 +3,7 @@ package com.whitenight.smartflow.repository.database.query;
 public class StaffInviteQuery {
 
     public static final String INVITE_STAFF = """
-    INSERT INTO SMARTFLOW_StaffInvite (
+    INSERT INTO StaffInvite (
         staff_invite_csv_upload_id,
         staff_invite_email,
         staff_invite_token,
@@ -30,13 +30,13 @@ public class StaffInviteQuery {
                 staff_invite_token,
                 staff_invite_expires_at,
             FROM
-                SMARTFLOW_StaffInvite
+                StaffInvite
             WHERE   staff_invite_email = :staffInviteEmail
                 AND staff_invite_staus = 'INVITED'
     """;
 
     public static final String DELETE_STAFF_INVITE = """
-            UPDATE SMARTFLOW_StaffInvite
+            UPDATE StaffInvite
             SET
                 staff_invite_status = 'DELETED/EXPIRED',
                 staff_invite_updated_at = CURRENT_TIMESTAMP,
